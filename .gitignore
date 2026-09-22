@@ -1,5 +1,32 @@
+# Entornos virtuales
+.venv/
+env/
+venv/
+ENV/
 
-__pycache__
+# Carpetas de clases y laboratorios (excluidas del TP)
+clases/
+clases_summary.txt
+labos/
+RESUMEN_TEORICO_ESAA.md
+
+# Archivos pesados de señales ECG y temporales (los metadatos CSV se mantienen)
+tmp_data/
+data_eda/
+data/ptbxl/records100/
+data/ptbxl/records500/
+data/ICBEB/records100/
+data/ICBEB/records500/
+*.zip
+*.tar.gz
+
+# Python & Jupyter
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints
+
+# Logs y temporales LaTeX
 **/*.pdf
 **/*.toc
 **/*.bbl
@@ -7,9 +34,5 @@ __pycache__
 **/*.out
 **/*.aux
 **/*.log
-**/*.gz
-**/*.pyc
 **/*.fls
 **/*.fdb_latexmk
-
-.ipynb_checkpoints

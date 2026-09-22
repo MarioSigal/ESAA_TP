@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Resumen: Benchmark de ECG con PTB-XL</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: #222;
+    line-height: 1.5;
+    font-size: 11pt;
+    max-width: 800px;
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+  }
+  h1 { font-size: 17pt; color: #1e3a8a; margin-bottom: 4px; }
+  .subtitle { font-size: 10.5pt; color: #555; margin-bottom: 20px; }
+  h2 { font-size: 13pt; color: #1e40af; border-bottom: 1.5px solid #e5e7eb; padding-bottom: 4px; margin-top: 22px; }
+  ul, ol { margin: 8px 0 12px 20px; padding: 0; }
+  li { margin-bottom: 8px; }
+  p { margin: 8px 0; }
+  .highlight-box {
+    background: #f0fdf4;
+    border-left: 4px solid #16a34a;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Resumen: Benchmark de ECG con PTB-XL</h1>
+<div class="subtitle">
+  <strong>Proyecto:</strong> <a href="https://github.com/helme/ecg_ptbxl_benchmarking">helme/ecg_ptbxl_benchmarking</a> &nbsp;|&nbsp; 
+  <strong>Materia:</strong> Evaluación de Sistemas de Aprendizaje Automático (ESAA)
+</div>
+
+<h2>¿De qué se trata el proyecto?</h2>
+<p>
+Básicamente, este repositorio arma una <strong>competencia de modelos de Deep Learning</strong> para ver cuál es el mejor diagnosticando problemas cardíacos en electrocardiogramas (ECG) de 12 derivaciones.
+</p>
+<ul>
+  <li><strong>Los datos:</strong> Usa <strong>PTB-XL</strong>, una base de datos pública con casi 22.000 registros de ECG de unos 19.000 pacientes.</li>
+  <li><strong>El problema:</strong> Es multietiqueta (un paciente puede tener varias cosas a la vez: un infarto, una arritmia, etc.).</li>
+  <li><strong>Los modelos:</strong> Compara varias redes neuronales modernas (ResNet 1D, Inception 1D, LSTMs) contra modelos más básicos.</li>
+</ul>
+
+<h2>¿Cómo evalúan los modelos hoy?</h2>
+<ol>
+  <li><strong>Partición de datos:</strong> Bien hecha. Dividieron los datos cuidando que todos los ECGs de un mismo paciente queden en el mismo grupo. Así el modelo no "hace trampa" reconociendo al paciente en vez de a la enfermedad.</li>
+  <li><strong>La métrica que usan:</strong> Usan casi exclusivamente <strong>AUROC</strong>. Es un número general que mide qué tan bien separa los casos positivos de los negativos.</li>
+  <li><strong>Incertidumbre:</strong> Hacen 100 remuestreos (<em>Bootstrap</em>) en el conjunto de test para dar un margen de error (los percentiles 5% y 95%).</li>
+</ol>
+
+<h2>¿Qué cosas podemos hacer nosotros para mejorar la evaluación?</h2>
+<p>
+Lo que hace el repo hoy es muy básico: solo mira un número general (el AUROC) y no evalúa cómo funcionaría el modelo en un hospital de verdad. Acá van <strong>5 cosas muy concretas y fáciles de entender que podemos hacer</strong> (basadas en lo que vimos en las clases):
+</p>
+
+<ol>
+  <li>
+    <strong>Ponerle costo a los errores (no todos los errores son iguales):</strong><br>
+    <em>La idea:</em> Hoy el modelo trata igual a cualquier error. Pero en la vida real, que el modelo mande a hacer un estudio de más a alguien sano es una molestia; pero que mande a su casa a alguien que se está infartando <strong>es gravísimo</strong>.<br>
+    <em>Qué hacemos:</em> Armamos una matriz de costos donde errarle a un infarto cueste mucho más caro, y medimos qué modelo genera menor costo total (<em>Costo Esperado</em> de la Clase 3).
+  </li>
+  <li>
+    <strong>Dejar que el modelo diga "No sé, que lo revise un médico" (Abstención):</strong><br>
+    <em>La idea:</em> En medicina, si el algoritmo no está seguro, obligarlo a tirar una moneda al aire es peligroso.<br>
+    <em>Qué hacemos:</em> Le permitimos al modelo abstenerse cuando tenga dudas (el <em>Costo de Chow</em> de la Clase 3). Evaluamos qué tan bueno es cuando solo decide sobre los casos donde está seguro.
+  </li>
+  <li>
+    <strong>Ver si el modelo "delira confianza" y corregirlo (Calibración):</strong><br>
+    <em>La idea:</em> Las redes neuronales suelen ser muy agrandadas: capaz te dicen <em>"estoy 99% seguro de que hay infarto"</em> cuando en realidad la probabilidad real es del 70%.<br>
+    <em>Qué hacemos:</em> Medimos si las probabilidades son honestas (usando el <em>Brier Score</em> de la Clase 5) y le aplicamos un ajuste simple (<em>Platt o Temperature Scaling</em> de la Clase 6) para calibrar su confianza.
+  </li>
+  <li>
+    <strong>Ver si anda peor en mujeres o ancianos (Análisis por subgrupos):</strong><br>
+    <em>La idea:</em> Como vimos en la Clase 1, un sistema puede dar un promedio excelente a nivel general, pero fallar estrepitosamente en una minoría.<br>
+    <em>Qué hacemos:</em> Como el dataset tiene edad y sexo, separamos las predicciones y nos fijamos: <em>¿el modelo rinde igual de bien en hombres que en mujeres? ¿falla más en personas mayores de 80 años?</em>
+  </li>
+  <li>
+    <strong>Probar si funciona en otro hospital (Dataset Shift):</strong><br>
+    <em>La idea:</em> El modelo fue entrenado con datos de un centro de salud de Alemania. Como vimos en la Clase 2, los modelos suelen caerse cuando cambian de entorno.<br>
+    <em>Qué hacemos:</em> Agarras el modelo ya entrenado y lo testeas directo sobre el dataset de China (ICBEB) para ver si de verdad aprendió cardiología o si solo memorizó las máquinas del hospital alemán.
+  </li>
+</ol>
+
+<div class="highlight-box">
+  <strong>Conclusión práctica para la entrega:</strong><br>
+  Lo mejor de todo esto es que <strong>no hace falta entrenar ningún modelo ni gastar horas de GPU</strong>: en la carpeta <code>output/</code> del repo ya están guardadas las respuestas que dio cada modelo (<code>y_test_pred.npy</code>).<br> 
+  Nuestro trabajo para la materia consiste simplemente en agarrar esos archivos con un script de Python y calcularles estas métricas más inteligentes.
+</div>
+
+</body>
+</html>
