@@ -1,3 +1,11 @@
+# Evaluación de Sistemas de Aprendizaje Automático (ESAA) - TP ECG
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MarioSigal/ESAA_TP/blob/main/Analisis_de_ECG_Final.ipynb) **Notebook Principal:** `Analisis_de_ECG_Final.ipynb`
+
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/MarioSigal/ESAA_TP/blob/main/Analisis_Exploratorio_PTBXL_vs_ICBEB.ipynb) **Análisis Exploratorio Comparativo:** `Analisis_Exploratorio_PTBXL_vs_ICBEB.ipynb`
+
+---
+
 # Deep Learning for ECG Analysis: Benchmarks and Insights from PTB-XL
 This repository is accompanying our article [Deep Learning for ECG Analysis: Benchmarks
 and Insights from PTB-XL](https://doi.org/10.1109/jbhi.2020.3022989), which builds on the [PTB-XL dataset](https://www.nature.com/articles/s41597-020-0495-6). 
